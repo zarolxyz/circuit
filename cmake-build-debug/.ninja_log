@@ -1,0 +1,4 @@
+# ninja log v5
+0	48	1648907085128656894	CMakeFiles/circuit.dir/circuit.c.o	eaf8b53f3ecf5ff8
+0	49	1648907085128656894	CMakeFiles/circuit.dir/main.c.o	ce718dc432915768
+49	71	1648907085152660324	circuit	3bfe911053a1e6b0
