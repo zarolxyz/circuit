@@ -3,12 +3,18 @@
 #include "circuit.h"
 
 void print_electric(electric_t *electric) {
-    printf("resistance:%u\ncurrent:%u\nvoltage:%u\nnode1:%u\nnode2:%u\n",
+    printf("resistance:%d\ncurrent:%d\nvoltage:%d\nnode1:%d\nnode2:%d\n",
            electric->resistance, electric->current, electric->voltage,
            electric->node1, electric->node2);
 }
 
-electric_t *add_new_electric(electric_t **electrics, unsigned int resistance, int node1, int node2) {
+void print_electrics(electric_t **electrics) {
+    int count = count_electrics(electrics);
+    for (int i = 0; i < count; i++)
+        print_electric(electrics[i]);
+}
+
+electric_t *add_new_electric(electric_t **electrics, int resistance, int node1, int node2) {
     electric_t *electric = calloc(1, sizeof(electric_t));;
     electric->resistance = resistance;
     electric->node1 = node1;
@@ -20,10 +26,13 @@ electric_t *add_new_electric(electric_t **electrics, unsigned int resistance, in
 int main() {
     int voltage = 1000;
     electric_t **electrics = new_electrics();
-    add_new_electric(electrics, 1000, ANODE, 2);
-    add_new_electric(electrics, 720, 2, CATHODE);
-    add_new_electric(electrics, 140, 2, CATHODE);
-    direction_t **directions = parse_circuit_directions(electrics);
-    printf("%d\n", get_directions_resistance(directions[0]->next));
+    add_new_electric(electrics, 100, ANODE, 2);
+    add_new_electric(electrics, 72, 2, CATHODE);
+    add_new_electric(electrics, 14, 2, 3);
+    add_new_electric(electrics, 28, 2, 3);
+    add_new_electric(electrics, 48, 3, CATHODE);
+    printf("voltage:%d\n", voltage);
+    printf("current:%d\n", run_circuit(electrics, voltage));
+    print_electrics(electrics);
     return 0;
 }

@@ -40,21 +40,15 @@ int test_electrics_in_electrics(electric_t **electrics1, electric_t **electrics2
 
 void add_electric(electric_t **electrics, electric_t *electric);
 
-void delete_electric(electric_t **electrics, electric_t *electric);
-
 int test_circuit_direction(electric_t **electrics, electric_t **flag_electrics, electric_t *electric, int node);
 
 direction_t **new_directions();
 
 int count_directions(direction_t **directions);
 
-direction_t **copy_directions(direction_t **directions);
-
 void add_direction(direction_t **directions, direction_t *direction);
 
-void delete_direction(direction_t **directions, direction_t *direction);
-
-direction_t *new_direction();
+direction_t *new_direction(electric_t *electric);
 
 direction_t *
 parse_circuit_direction(electric_t **electrics, electric_t **flag_electrics, electric_t *electric, int node);
@@ -80,5 +74,13 @@ int get_direction_resistance(direction_t *direction, direction_t *end_direction)
 int calculate_resistance_and(int resistance1, int resistance2);
 
 int get_directions_resistance(direction_t **directions);
+
+void set_directions_current(direction_t **directions, int current);
+
+void set_direction_current(direction_t *direction, int current);
+
+void set_circuit_voltage(electric_t **electrics);
+
+int run_circuit(electric_t **electrics, int voltage);
 
 #endif //CIRCUIT_CIRCUIT_H
