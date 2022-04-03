@@ -12,18 +12,17 @@
 #define CATHODE 0
 
 typedef struct electric_s {
-    unsigned int resistance;
-    unsigned int current;
-    unsigned int voltage;
-    unsigned int direct;
+    int resistance;
+    int current;
+    int voltage;
     int node1;
     int node2;
 } electric_t;
 
-typedef struct direct_s {
+typedef struct direction_s {
     electric_t *electric;
-    struct direct_s **next;
-} direct_t;
+    struct direction_s **next;
+} direction_t;
 
 electric_t **new_electrics();
 
@@ -31,7 +30,7 @@ electric_t **copy_electrics(electric_t **electrics);
 
 void clear_electrics_status(electric_t **electrics);
 
-electric_t **find_node_electrics(electric_t **electrics, unsigned int node);
+electric_t **find_node_electrics(electric_t **electrics, int node);
 
 int count_electrics(electric_t **electrics);
 
@@ -43,18 +42,43 @@ void add_electric(electric_t **electrics, electric_t *electric);
 
 void delete_electric(electric_t **electrics, electric_t *electric);
 
-int test_circuit_direct(electric_t **electrics, electric_t **flag_electrics, electric_t *electric, unsigned int node);
+int test_circuit_direction(electric_t **electrics, electric_t **flag_electrics, electric_t *electric, int node);
 
-direct_t **new_directs();
+direction_t **new_directions();
 
-int count_directs(direct_t **directs);
+int count_directions(direction_t **directions);
 
-void add_direct(direct_t **directs, direct_t *direct);
+direction_t **copy_directions(direction_t **directions);
 
-direct_t *new_direct();
+void add_direction(direction_t **directions, direction_t *direction);
 
-direct_t *parse_circuit_direct(electric_t **electrics, electric_t **flag_electrics, electric_t *electric, int node);
+void delete_direction(direction_t **directions, direction_t *direction);
 
-direct_t **parse_circuit_directs(electric_t **electrics);
+direction_t *new_direction();
+
+direction_t *
+parse_circuit_direction(electric_t **electrics, electric_t **flag_electrics, electric_t *electric, int node);
+
+direction_t **parse_circuit_directions(electric_t **electrics);
+
+int test_equal_direction(direction_t *direction1, direction_t *direction2);
+
+int test_in_direction(direction_t *direction1, direction_t *direction2);
+
+int test_equal_in_directions(direction_t **directions, direction_t *direction);
+
+direction_t *find_direction_meeting(direction_t *direction1, direction_t *direction2);
+
+direction_t *find_directions_meeting(direction_t **directions);
+
+direction_t *find_previous_direction(direction_t *start_direction, direction_t *direction);
+
+direction_t **find_previous_directions(direction_t **directions, direction_t *direction);
+
+int get_direction_resistance(direction_t *direction, direction_t *end_direction);
+
+int calculate_resistance_and(int resistance1, int resistance2);
+
+int get_directions_resistance(direction_t **directions);
 
 #endif //CIRCUIT_CIRCUIT_H
