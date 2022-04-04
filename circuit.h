@@ -26,19 +26,21 @@ typedef struct direction_s {
 
 electric_t **new_electrics();
 
+int count_electrics(electric_t **electrics);
+
 electric_t **copy_electrics(electric_t **electrics);
 
 void clear_electrics_status(electric_t **electrics);
-
-electric_t **find_node_electrics(electric_t **electrics, int node);
-
-int count_electrics(electric_t **electrics);
 
 int test_electric_in_electrics(electric_t **electrics, electric_t *electric);
 
 int test_electrics_in_electrics(electric_t **electrics1, electric_t **electrics2);
 
+electric_t **find_node_electrics(electric_t **electrics, int node);
+
 void add_electric(electric_t **electrics, electric_t *electric);
+
+void delete_electric(electric_t **electrics, electric_t *electric);
 
 int test_circuit_direction(electric_t **electrics, electric_t **flag_electrics, electric_t *electric, int node);
 

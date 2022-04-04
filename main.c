@@ -15,7 +15,7 @@ void print_electrics(electric_t **electrics) {
 }
 
 electric_t *add_new_electric(electric_t **electrics, int resistance, int node1, int node2) {
-    electric_t *electric = calloc(1, sizeof(electric_t));;
+    electric_t *electric = malloc(sizeof(electric_t));
     electric->resistance = resistance;
     electric->node1 = node1;
     electric->node2 = node2;
@@ -24,7 +24,7 @@ electric_t *add_new_electric(electric_t **electrics, int resistance, int node1, 
 }
 
 int main() {
-    int voltage = 1000;
+    int voltage = 10000;
     electric_t **electrics = new_electrics();
     add_new_electric(electrics, 100, ANODE, 2);
     add_new_electric(electrics, 72, 2, CATHODE);
