@@ -3,4 +3,6 @@ project(circuit C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(circuit main.c circuit.c circuit.h)
+link_libraries(SDL2 SDL2_ttf)
+
+add_executable(circuit main.c circuit.c circuit.h gui.c gui.h)

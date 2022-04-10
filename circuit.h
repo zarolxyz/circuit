@@ -5,11 +5,15 @@
 #ifndef CIRCUIT_CIRCUIT_H
 #define CIRCUIT_CIRCUIT_H
 
+#include "stdlib.h"
+#include "string.h"
+
 #define MAXIMUM_ELECTRICS 36
 #define MAXIMUM_NODE_ELECTRICS 6
 
 #define ANODE 1
 #define CATHODE 0
+#define NODE_NULL -1
 
 typedef struct electric_s {
     int resistance;

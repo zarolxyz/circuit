@@ -1,6 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include "stdio.h"
+#include "stdlib.h"
 #include "circuit.h"
+#include "gui.h"
 
 void print_electric(electric_t *electric) {
     printf("resistance:%d\ncurrent:%d\nvoltage:%d\nnode1:%d\nnode2:%d\n",
@@ -24,6 +25,7 @@ electric_t *add_new_electric(electric_t **electrics, int resistance, int node1, 
 }
 
 int main() {
+    gui_main();
     int voltage = 10000;
     electric_t **electrics = new_electrics();
     add_new_electric(electrics, 100, ANODE, 2);

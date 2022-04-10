@@ -2,8 +2,6 @@
 // Created by zarolxyz on 2022/3/19.
 //
 
-#include <stdlib.h>
-#include <string.h>
 #include "circuit.h"
 
 electric_t **new_electrics() {
@@ -84,7 +82,7 @@ void delete_electric(electric_t **electrics, electric_t *electric) {
 
 int test_circuit_direction(electric_t **electrics, electric_t **flag_electrics, electric_t *electric, int node) {
     while (1) {
-        if (node == ANODE)
+        if (node == ANODE || node == NODE_NULL)
             return 0;
         if (node == CATHODE)
             return 1;
