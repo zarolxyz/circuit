@@ -13,12 +13,11 @@
 
 #define ANODE 1
 #define CATHODE 0
-#define NODE_NULL -1
 
 typedef struct electric_s {
-    int resistance;
-    int current;
-    int voltage;
+    float resistance;
+    float current;
+    float voltage;
     int node1;
     int node2;
 } electric_t;
@@ -75,18 +74,18 @@ direction_t *find_previous_direction(direction_t *start_direction, direction_t *
 
 direction_t **find_previous_directions(direction_t **directions, direction_t *direction);
 
-int get_direction_resistance(direction_t *direction, direction_t *end_direction);
+float get_direction_resistance(direction_t *direction, direction_t *end_direction);
 
-int calculate_resistance_and(int resistance1, int resistance2);
+float calculate_resistance_and(float resistance1, float resistance2);
 
-int get_directions_resistance(direction_t **directions);
+float get_directions_resistance(direction_t **directions);
 
-void set_directions_current(direction_t **directions, int current);
+void set_directions_current(direction_t **directions, float current);
 
-void set_direction_current(direction_t *direction, int current);
+void set_direction_current(direction_t *direction, float current);
 
 void set_circuit_voltage(electric_t **electrics);
 
-int run_circuit(electric_t **electrics, int voltage);
+float run_circuit(electric_t **electrics, float voltage);
 
 #endif //CIRCUIT_CIRCUIT_H

@@ -82,7 +82,7 @@ void delete_electric(electric_t **electrics, electric_t *electric) {
 
 int test_circuit_direction(electric_t **electrics, electric_t **flag_electrics, electric_t *electric, int node) {
     while (1) {
-        if (node == ANODE || node == NODE_NULL)
+        if (node == ANODE)
             return 0;
         if (node == CATHODE)
             return 1;
@@ -291,16 +291,17 @@ direction_t **find_previous_directions(direction_t **directions, direction_t *di
     return previous_directions;
 }
 
-int get_direction_resistance(direction_t *direction, direction_t *end_direction) {
+float get_direction_resistance(direction_t *direction, direction_t *end_direction) {
     if (direction == NULL)
         return 0;
-    int resistance = 0;
+    float resistance = 0;
     while (!test_equal_direction(direction, end_direction)) {
         if (direction->next == NULL) {
             resistance += direction->electric->resistance;
             break;
         }
-        resistance += direction->electric->resistance;
+        if (direction->electric != NULL)
+            resistance += direction->electric->resistance;
         int count = count_directions(direction->next);
         if (count == 1) {
             direction = direction->next[0];
@@ -314,13 +315,13 @@ int get_direction_resistance(direction_t *direction, direction_t *end_direction)
     return resistance;
 }
 
-int calculate_resistance_and(int resistance1, int resistance2) {
+float calculate_resistance_and(float resistance1, float resistance2) {
     return (resistance1 * resistance2) / (resistance1 + resistance2);
 }
 
-int get_directions_resistance(direction_t **directions) {
+float get_directions_resistance(direction_t **directions) {
     int count = count_directions(directions);
-    int resistance = -1;
+    float resistance = -1;
     direction_t *direction_meeting = find_directions_meeting(directions);
     direction_t **previous_directions = find_previous_directions(directions, direction_meeting);
     int count_previous_directions = count_directions(previous_directions);
@@ -353,10 +354,10 @@ int get_directions_resistance(direction_t **directions) {
     return resistance;
 }
 
-void set_directions_current(direction_t **directions, int current) {
+void set_directions_current(direction_t **directions, float current) {
     int count = count_directions(directions);
     direction_t *direction_meeting = find_directions_meeting(directions);
-    int resistance = get_directions_resistance(directions);
+    float resistance = get_directions_resistance(directions);
     direction_t **previous_directions = find_previous_directions(directions, direction_meeting);
     int count_previous_directions = count_directions(previous_directions);
     for (int i = 0; i < count_previous_directions; i++) {
@@ -367,9 +368,9 @@ void set_directions_current(direction_t **directions, int current) {
         }
         int count_found_directions = count_directions(found_directions);
         direction_t *found_direction_meeting = find_directions_meeting(found_directions);
-        int found_directions_resistance = get_directions_resistance(found_directions) +
-                                          get_direction_resistance(found_direction_meeting, direction_meeting);
-        int found_directions_current = current * resistance / found_directions_resistance;
+        float found_directions_resistance = get_directions_resistance(found_directions) +
+                                            get_direction_resistance(found_direction_meeting, direction_meeting);
+        float found_directions_current = current * resistance / found_directions_resistance;
         if (count_found_directions == 1)
             set_direction_current(found_directions[0], found_directions_current);
         else
@@ -378,9 +379,10 @@ void set_directions_current(direction_t **directions, int current) {
     }
 }
 
-void set_direction_current(direction_t *direction, int current) {
+void set_direction_current(direction_t *direction, float current) {
     while (1) {
-        direction->electric->current += current;
+        if (direction->electric != NULL)
+            direction->electric->current += current;
         if (direction->next == NULL)
             return;
         int count = count_directions(direction->next);
@@ -398,22 +400,20 @@ void set_circuit_voltage(electric_t **electrics) {
         electrics[i]->voltage = electrics[i]->resistance * electrics[i]->current;
 }
 
-int run_circuit(electric_t **electrics, int voltage) {
+float run_circuit(electric_t **electrics, float voltage) {
     clear_electrics_status(electrics);
     direction_t **directions = parse_circuit_directions(electrics);
+    direction_t *direction = new_direction(NULL);
+    direction->next = directions;
     int count = count_directions(directions);
     if (count == 0) {
         free(directions);
         return 0;
     }
-    int resistance = get_direction_resistance(directions[0], NULL);
-    int current;
-    for (int i = 1; i < count; i++)
-        resistance = calculate_resistance_and(resistance, get_direction_resistance(directions[i], NULL));
+    float resistance = get_direction_resistance(direction, NULL);
+    float current;
     current = voltage / resistance;
-    for (int i = 0; i < count; i++)
-        set_direction_current(directions[i], current);
-    free(directions);
+    set_direction_current(direction, current);
     set_circuit_voltage(electrics);
     return current;
 }
