@@ -65,7 +65,7 @@ void draw_text(int x, int y, char *text) {
 }
 
 void draw_back() {
-    SDL_SetRenderDrawColor(renderer, 96, 96, 96, 255);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
     for (int i = 0; i < HEIGHT + 1; i++) {
         SDL_RenderDrawLine(renderer, 0, SIZE / 2 + SIZE * i, WIDTH * SIZE,
                            SIZE / 2 + SIZE * i);
@@ -77,7 +77,7 @@ void draw_back() {
 }
 
 void draw_electric(int x, int y, char *string1, char *string2) {
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderDrawLine(renderer, SIZE * x, SIZE / 2 + SIZE * y, SIZE * x + ELECTRIC_WIRE_LENGTH, SIZE / 2 + SIZE * y);
     SDL_RenderDrawLine(renderer, SIZE * x + SIZE - ELECTRIC_WIRE_LENGTH, SIZE / 2 + SIZE * y, SIZE * x + SIZE,
                        SIZE / 2 + SIZE * y);
@@ -86,7 +86,7 @@ void draw_electric(int x, int y, char *string1, char *string2) {
                        SIZE * x + SIZE - ELECTRIC_WIRE_LENGTH, SIZE / 2 + SIZE * y);
     SDL_Rect rect = {ELECTRIC_RECTANGLE_X(x), ELECTRIC_RECTANGLE_Y(y),
                      ELECTRIC_WIDTH, ELECTRIC_HEIGHT};
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderDrawRect(renderer, &rect);
     draw_text(ELECTRIC_RECTANGLE_X(x), ELECTRIC_RECTANGLE_Y(y), string1);
     draw_text(SIZE * x, ELECTRIC_RECTANGLE_Y(y) + ELECTRIC_HEIGHT, string2);
@@ -211,9 +211,11 @@ void gui_event_loop() {
                             break;
                         case SDLK_SPACE:
                             if (!(selected_x == ELECTRIC_SOURCE_X && selected_y == ELECTRIC_SOURCE_Y)) {
-                                if (electric_map[selected_x][selected_y] == NULL)
-                                    electric_map[selected_x][selected_y] = gui_new_electric();
-                                else {
+                                if (electric_map[selected_x][selected_y] == NULL) {
+                                    if ((selected_x == 0 || electric_map[selected_x - 1][selected_y] == NULL) &&
+                                        electric_map[selected_x + 1][selected_y] == NULL)
+                                        electric_map[selected_x][selected_y] = gui_new_electric();
+                                } else {
                                     gui_delete_electric(electric_map[selected_x][selected_y]);
                                     electric_map[selected_x][selected_y] = NULL;
                                 }
