@@ -1,7 +1,4 @@
-#include "stdio.h"
-#include "stdlib.h"
-#include "circuit.h"
-#include "gui.h"
+#include "main.h"
 
 void print_electric(electric_t *electric) {
     printf("resistance:%.2f\ncurrent:%.2f\nvoltage:%.2f\nnode1:%d\nnode2:%d\n",

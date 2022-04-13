@@ -94,6 +94,8 @@ void draw_electric(int x, int y, char *string1, char *string2) {
 
 void draw_node1_wire(int x1, int y1, int x2, int y2) {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderDrawLine(renderer, SIZE * x1, SIZE / 2 + SIZE * y1, SIZE * x1 + ELECTRIC_WIRE_LENGTH,
+                       SIZE / 2 + SIZE * y1);
     if (x2 < x1) {
         SDL_RenderDrawLine(renderer, SIZE * x2, SIZE / 2 + SIZE * y1, SIZE * x1, SIZE / 2 + SIZE * y1);
         SDL_RenderDrawLine(renderer, SIZE * x2, SIZE / 2 + SIZE * y1, SIZE * x2, SIZE / 2 + SIZE * y2);
@@ -106,6 +108,8 @@ void draw_node1_wire(int x1, int y1, int x2, int y2) {
 
 void draw_node2_wire(int x1, int y1, int x2, int y2) {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderDrawLine(renderer, SIZE * x1, SIZE / 2 + SIZE * y1, SIZE * x1 - ELECTRIC_WIRE_LENGTH,
+                       SIZE / 2 + SIZE * y1);
     if (x2 > x1) {
         SDL_RenderDrawLine(renderer, SIZE * x2, SIZE / 2 + SIZE * y1, SIZE * x1, SIZE / 2 + SIZE * y1);
         SDL_RenderDrawLine(renderer, SIZE * x2, SIZE / 2 + SIZE * y1, SIZE * x2, SIZE / 2 + SIZE * y2);
@@ -118,15 +122,15 @@ void draw_node2_wire(int x1, int y1, int x2, int y2) {
 void draw_circuit() {
     char electric_string1[16];
     char electric_string2[32];
-    sprintf(electric_string1, "%.2fV", electric_source_voltage);
+    sprintf(electric_string1, "%.1fV", electric_source_voltage);
     sprintf(electric_string2, "%.2fA", total_current);
     draw_electric(ELECTRIC_SOURCE_X, ELECTRIC_SOURCE_Y, electric_string1, electric_string2);
     for (int i = 0; i < WIDTH; i++) {
         for (int j = 0; j < HEIGHT - 1; j++) {
             electric_t *electric = electric_map[i][j];
             if (electric != NULL) {
-                sprintf(electric_string1, "%.2fO", electric->resistance);
-                sprintf(electric_string2, "%.2fV%.2fA", electric->voltage, electric->current);
+                sprintf(electric_string1, "%.0fO", electric->resistance);
+                sprintf(electric_string2, "%.1fV%.2fA", electric->voltage, electric->current);
                 draw_electric(i, j, electric_string1, electric_string2);
                 if (electric->node1 == ANODE)
                     draw_node1_wire(i, j, ELECTRIC_SOURCE_X, ELECTRIC_SOURCE_Y);
@@ -193,29 +197,27 @@ void gui_event_loop() {
             switch (event.type) {
                 case SDL_KEYUP:
                     switch (event.key.keysym.sym) {
-                        case SDLK_UP:
+                        case SDLK_w:
                             if (selected_y > 0)
                                 selected_y--;
                             break;
-                        case SDLK_DOWN:
+                        case SDLK_s:
                             if (selected_y < HEIGHT)
                                 selected_y++;
                             break;
-                        case SDLK_LEFT:
+                        case SDLK_a:
                             if (selected_x > 0)
                                 selected_x--;
                             break;
-                        case SDLK_RIGHT:
+                        case SDLK_d:
                             if (selected_x < WIDTH - 1)
                                 selected_x++;
                             break;
-                        case SDLK_SPACE:
+                        case SDLK_l:
                             if (!(selected_x == ELECTRIC_SOURCE_X && selected_y == ELECTRIC_SOURCE_Y)) {
-                                if (electric_map[selected_x][selected_y] == NULL) {
-                                    if ((selected_x == 0 || electric_map[selected_x - 1][selected_y] == NULL) &&
-                                        electric_map[selected_x + 1][selected_y] == NULL)
-                                        electric_map[selected_x][selected_y] = gui_new_electric();
-                                } else {
+                                if (electric_map[selected_x][selected_y] == NULL)
+                                    electric_map[selected_x][selected_y] = gui_new_electric();
+                                else {
                                     gui_delete_electric(electric_map[selected_x][selected_y]);
                                     electric_map[selected_x][selected_y] = NULL;
                                 }
@@ -227,55 +229,19 @@ void gui_event_loop() {
                                 electric_source_voltage -= 0.1;
                             else {
                                 if (electric_map[selected_x][selected_y] != NULL &&
-                                    electric_map[selected_x][selected_y]->resistance - 0.1 > 0)
-                                    electric_map[selected_x][selected_y]->resistance -= 0.1;
-                            }
-                            break;
-                        case SDLK_w:
-                            if ((selected_x == ELECTRIC_SOURCE_X && selected_y == ELECTRIC_SOURCE_Y))
-                                electric_source_voltage += 0.1;
-                            else {
-                                if (electric_map[selected_x][selected_y] != NULL)
-                                    electric_map[selected_x][selected_y]->resistance += 0.1;
-                            }
-                            break;
-                        case SDLK_e:
-                            if ((selected_x == ELECTRIC_SOURCE_X && selected_y == ELECTRIC_SOURCE_Y) &&
-                                electric_source_voltage - 1 > 0)
-                                electric_source_voltage -= 1;
-                            else {
-                                if (electric_map[selected_x][selected_y] != NULL &&
                                     electric_map[selected_x][selected_y]->resistance - 1 > 0)
                                     electric_map[selected_x][selected_y]->resistance -= 1;
                             }
                             break;
-                        case SDLK_r:
+                        case SDLK_e:
                             if ((selected_x == ELECTRIC_SOURCE_X && selected_y == ELECTRIC_SOURCE_Y))
-                                electric_source_voltage += 1;
+                                electric_source_voltage += 0.1;
                             else {
                                 if (electric_map[selected_x][selected_y] != NULL)
                                     electric_map[selected_x][selected_y]->resistance += 1;
                             }
                             break;
-                        case SDLK_t:
-                            if ((selected_x == ELECTRIC_SOURCE_X && selected_y == ELECTRIC_SOURCE_Y) &&
-                                electric_source_voltage - 10 > 0)
-                                electric_source_voltage -= 10;
-                            else {
-                                if (electric_map[selected_x][selected_y] != NULL &&
-                                    electric_map[selected_x][selected_y]->resistance - 10 > 0)
-                                    electric_map[selected_x][selected_y]->resistance -= 10;
-                            }
-                            break;
-                        case SDLK_y:
-                            if ((selected_x == ELECTRIC_SOURCE_X && selected_y == ELECTRIC_SOURCE_Y))
-                                electric_source_voltage += 10;
-                            else {
-                                if (electric_map[selected_x][selected_y] != NULL)
-                                    electric_map[selected_x][selected_y]->resistance += 10;
-                            }
-                            break;
-                        case SDLK_a:
+                        case SDLK_j:
                             if (electric_map[selected_x][selected_y] != NULL) {
                                 if (!is_connecting_wire) {
                                     is_connecting_wire = 1;
@@ -294,11 +260,11 @@ void gui_event_loop() {
                                                 node_electrics[i]->node2 = electric_map[selected_x][selected_y]->node1;
                                         }
                                     } else {
-                                        node_electrics = find_node_electrics(gui_electrics,
-                                                                             electric_map[selected_x][selected_y]->node1);
+                                        int node = electric_map[selected_x][selected_y]->node1;
+                                        node_electrics = find_node_electrics(gui_electrics, node);
                                         int count = count_electrics(node_electrics);
                                         for (int i = 0; i < count; i++) {
-                                            if (node_electrics[i]->node1 == electric_map[selected_x][selected_y]->node1)
+                                            if (node_electrics[i]->node1 == node)
                                                 node_electrics[i]->node1 = connecting_node;
                                             else
                                                 node_electrics[i]->node2 = connecting_node;
@@ -322,7 +288,7 @@ void gui_event_loop() {
                                 }
                             }
                             break;
-                        case SDLK_s:
+                        case SDLK_k:
                             if (electric_map[selected_x][selected_y] != NULL) {
                                 if (!is_connecting_wire) {
                                     is_connecting_wire = 1;
@@ -341,11 +307,11 @@ void gui_event_loop() {
                                                 node_electrics[i]->node2 = electric_map[selected_x][selected_y]->node2;
                                         }
                                     } else {
-                                        node_electrics = find_node_electrics(gui_electrics,
-                                                                             electric_map[selected_x][selected_y]->node2);
+                                        int node = electric_map[selected_x][selected_y]->node2;
+                                        node_electrics = find_node_electrics(gui_electrics, node);
                                         int count = count_electrics(node_electrics);
                                         for (int i = 0; i < count; i++) {
-                                            if (node_electrics[i]->node1 == electric_map[selected_x][selected_y]->node2)
+                                            if (node_electrics[i]->node1 == node)
                                                 node_electrics[i]->node1 = connecting_node;
                                             else
                                                 node_electrics[i]->node2 = connecting_node;
@@ -367,18 +333,6 @@ void gui_event_loop() {
                                             node_electrics[i]->node2 = CATHODE;
                                     }
                                 }
-                            }
-                            break;
-                        case SDLK_d:
-                            if (electric_map[selected_x][selected_y] != NULL) {
-                                electric_map[selected_x][selected_y]->node1 = new_node;
-                                new_node++;
-                            }
-                            break;
-                        case SDLK_f:
-                            if (electric_map[selected_x][selected_y] != NULL) {
-                                electric_map[selected_x][selected_y]->node2 = new_node;
-                                new_node++;
                             }
                             break;
                     }
