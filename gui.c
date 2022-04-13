@@ -62,6 +62,7 @@ void draw_text(int x, int y, char *text) {
     SDL_FreeSurface(text_surface);
     SDL_Rect dst_rect = {x, y, text_surface->w, text_surface->h};
     SDL_RenderCopy(renderer, text_texture, &src_rect, &dst_rect);
+    SDL_DestroyTexture(text_texture);
 }
 
 void draw_back() {
