@@ -7,8 +7,8 @@
 SDL_Window *window;
 SDL_Renderer *renderer;
 TTF_Font *font;
-electric_t *electric_map[WIDTH][HEIGHT - 1];
-electric_t **gui_electrics;
+electric_t *electric_map[WIDTH][HEIGHT + 1];
+electric_t **electrics;
 int selected_x;
 int selected_y;
 float electric_source_voltage;
@@ -30,7 +30,7 @@ void init_gui() {
         for (int j = 0; j < HEIGHT - 1; j++)
             electric_map[i][j] = NULL;
     }
-    gui_electrics = new_electrics();
+    electrics = new_electrics();
     selected_x = ELECTRIC_SOURCE_X;
     selected_y = ELECTRIC_SOURCE_Y;
     electric_source_voltage = 1;
@@ -40,10 +40,10 @@ void init_gui() {
 }
 
 void quit_gui() {
-    int count = count_electrics(gui_electrics);
+    int count = count_electrics(electrics);
     for (int i = 0; i < count; i++)
-        free(gui_electrics[i]);
-    free(gui_electrics);
+        free(electrics[i]);
+    free(electrics);
     SDL_DestroyWindow(window);
     SDL_DestroyRenderer(renderer);
     if (font != NULL) {
@@ -51,7 +51,6 @@ void quit_gui() {
     }
     TTF_Quit();
     SDL_Quit();
-    exit(0);
 }
 
 void draw_text(int x, int y, char *text) {
@@ -65,36 +64,16 @@ void draw_text(int x, int y, char *text) {
     SDL_DestroyTexture(text_texture);
 }
 
-void draw_back() {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-    for (int i = 0; i < HEIGHT + 1; i++) {
-        SDL_RenderDrawLine(renderer, 0, SIZE / 2 + SIZE * i, WIDTH * SIZE,
-                           SIZE / 2 + SIZE * i);
-    }
-    for (int i = 0; i < WIDTH + 1; i++) {
-        SDL_RenderDrawLine(renderer, SIZE * i, SIZE / 2, SIZE * i,
-                           SIZE * HEIGHT + SIZE / 2);
-    }
-}
-
 void draw_electric(int x, int y, char *string1, char *string2) {
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_RenderDrawLine(renderer, SIZE * x, SIZE / 2 + SIZE * y, SIZE * x + ELECTRIC_WIRE_LENGTH, SIZE / 2 + SIZE * y);
-    SDL_RenderDrawLine(renderer, SIZE * x + SIZE - ELECTRIC_WIRE_LENGTH, SIZE / 2 + SIZE * y, SIZE * x + SIZE,
-                       SIZE / 2 + SIZE * y);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderDrawLine(renderer, SIZE * x + ELECTRIC_WIRE_LENGTH, SIZE / 2 + SIZE * y,
-                       SIZE * x + SIZE - ELECTRIC_WIRE_LENGTH, SIZE / 2 + SIZE * y);
-    SDL_Rect rect = {ELECTRIC_RECTANGLE_X(x), ELECTRIC_RECTANGLE_Y(y),
-                     ELECTRIC_WIDTH, ELECTRIC_HEIGHT};
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    x = SIZE * (x) + (SIZE - ELECTRIC_WIDTH) / 2;
+    y = SIZE / 2 + SIZE * (y) - ELECTRIC_HEIGHT / 2;
+    SDL_Rect rect = {x, y, ELECTRIC_WIDTH, ELECTRIC_HEIGHT};
     SDL_RenderDrawRect(renderer, &rect);
-    draw_text(ELECTRIC_RECTANGLE_X(x), ELECTRIC_RECTANGLE_Y(y), string1);
-    draw_text(SIZE * x, ELECTRIC_RECTANGLE_Y(y) + ELECTRIC_HEIGHT, string2);
+    draw_text(x, y, string1);
+    draw_text(x, y + ELECTRIC_HEIGHT, string2);
 }
 
 void draw_node1_wire(int x1, int y1, int x2, int y2) {
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderDrawLine(renderer, SIZE * x1, SIZE / 2 + SIZE * y1, SIZE * x1 + ELECTRIC_WIRE_LENGTH,
                        SIZE / 2 + SIZE * y1);
     if (x2 < x1) {
@@ -108,7 +87,6 @@ void draw_node1_wire(int x1, int y1, int x2, int y2) {
 
 
 void draw_node2_wire(int x1, int y1, int x2, int y2) {
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderDrawLine(renderer, SIZE * x1, SIZE / 2 + SIZE * y1, SIZE * x1 - ELECTRIC_WIRE_LENGTH,
                        SIZE / 2 + SIZE * y1);
     if (x2 > x1) {
@@ -126,6 +104,8 @@ void draw_circuit() {
     sprintf(electric_string1, "%.1fV", electric_source_voltage);
     sprintf(electric_string2, "%.2fA", total_current);
     draw_electric(ELECTRIC_SOURCE_X, ELECTRIC_SOURCE_Y, electric_string1, electric_string2);
+    draw_node1_wire(ELECTRIC_SOURCE_X, ELECTRIC_SOURCE_Y, ELECTRIC_SOURCE_X, ELECTRIC_SOURCE_Y);
+    draw_node2_wire(ELECTRIC_SOURCE_X + 1, ELECTRIC_SOURCE_Y, ELECTRIC_SOURCE_X + 1, ELECTRIC_SOURCE_Y);
     for (int i = 0; i < WIDTH; i++) {
         for (int j = 0; j < HEIGHT - 1; j++) {
             electric_t *electric = electric_map[i][j];
@@ -158,12 +138,11 @@ void draw_circuit() {
             }
         }
     }
-    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
     SDL_RenderDrawLine(renderer, SIZE * selected_x, SIZE / 2 + SIZE * selected_y, SIZE * selected_x + SIZE,
                        SIZE / 2 + SIZE * selected_y);
 }
 
-electric_t *gui_new_electric() {
+electric_t *new_electric() {
     electric_t *electric = malloc(sizeof(electric_t));
     electric->resistance = 1;
     electric->voltage = 0;
@@ -172,28 +151,24 @@ electric_t *gui_new_electric() {
     new_node++;
     electric->node2 = new_node;
     new_node++;
-    add_electric(gui_electrics, electric);
+    add_electric(electrics, electric);
     return electric;
 }
 
-void gui_delete_electric(electric_t *electric) {
-    delete_electric(gui_electrics, electric);
+void destroy_electric(electric_t *electric) {
+    delete_electric(electrics, electric);
     free(electric);
 }
 
-void gui_draw() {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-    draw_back();
-    draw_circuit();
-    SDL_RenderPresent(renderer);
-}
-
-void gui_event_loop() {
+void event_loop() {
     SDL_Event event;
     while (1) {
-        total_current = run_circuit(gui_electrics, electric_source_voltage);
-        gui_draw();
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        draw_circuit();
+        SDL_RenderPresent(renderer);
+        total_current = run_circuit(electrics, electric_source_voltage);
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
                 case SDL_KEYUP:
@@ -217,9 +192,9 @@ void gui_event_loop() {
                         case SDLK_l:
                             if (!(selected_x == ELECTRIC_SOURCE_X && selected_y == ELECTRIC_SOURCE_Y)) {
                                 if (electric_map[selected_x][selected_y] == NULL)
-                                    electric_map[selected_x][selected_y] = gui_new_electric();
+                                    electric_map[selected_x][selected_y] = new_electric();
                                 else {
-                                    gui_delete_electric(electric_map[selected_x][selected_y]);
+                                    destroy_electric(electric_map[selected_x][selected_y]);
                                     electric_map[selected_x][selected_y] = NULL;
                                 }
                             }
@@ -252,7 +227,7 @@ void gui_event_loop() {
                                     electric_t **node_electrics;
                                     if (electric_map[selected_x][selected_y]->node1 == ANODE ||
                                         electric_map[selected_x][selected_y]->node1 == CATHODE) {
-                                        node_electrics = find_node_electrics(gui_electrics, connecting_node);
+                                        node_electrics = find_node_electrics(electrics, connecting_node);
                                         int count = count_electrics(node_electrics);
                                         for (int i = 0; i < count; i++) {
                                             if (node_electrics[i]->node1 == connecting_node)
@@ -262,7 +237,7 @@ void gui_event_loop() {
                                         }
                                     } else {
                                         int node = electric_map[selected_x][selected_y]->node1;
-                                        node_electrics = find_node_electrics(gui_electrics, node);
+                                        node_electrics = find_node_electrics(electrics, node);
                                         int count = count_electrics(node_electrics);
                                         for (int i = 0; i < count; i++) {
                                             if (node_electrics[i]->node1 == node)
@@ -278,7 +253,7 @@ void gui_event_loop() {
                                     connecting_node = ANODE;
                                 } else {
                                     is_connecting_wire = 0;
-                                    electric_t **node_electrics = find_node_electrics(gui_electrics, connecting_node);
+                                    electric_t **node_electrics = find_node_electrics(electrics, connecting_node);
                                     int count = count_electrics(node_electrics);
                                     for (int i = 0; i < count; i++) {
                                         if (node_electrics[i]->node1 == connecting_node)
@@ -299,7 +274,7 @@ void gui_event_loop() {
                                     electric_t **node_electrics;
                                     if (electric_map[selected_x][selected_y]->node2 == ANODE ||
                                         electric_map[selected_x][selected_y]->node2 == CATHODE) {
-                                        node_electrics = find_node_electrics(gui_electrics, connecting_node);
+                                        node_electrics = find_node_electrics(electrics, connecting_node);
                                         int count = count_electrics(node_electrics);
                                         for (int i = 0; i < count; i++) {
                                             if (node_electrics[i]->node1 == connecting_node)
@@ -309,7 +284,7 @@ void gui_event_loop() {
                                         }
                                     } else {
                                         int node = electric_map[selected_x][selected_y]->node2;
-                                        node_electrics = find_node_electrics(gui_electrics, node);
+                                        node_electrics = find_node_electrics(electrics, node);
                                         int count = count_electrics(node_electrics);
                                         for (int i = 0; i < count; i++) {
                                             if (node_electrics[i]->node1 == node)
@@ -325,7 +300,7 @@ void gui_event_loop() {
                                     connecting_node = CATHODE;
                                 } else {
                                     is_connecting_wire = 0;
-                                    electric_t **node_electrics = find_node_electrics(gui_electrics, connecting_node);
+                                    electric_t **node_electrics = find_node_electrics(electrics, connecting_node);
                                     int count = count_electrics(node_electrics);
                                     for (int i = 0; i < count; i++) {
                                         if (node_electrics[i]->node1 == connecting_node)
@@ -346,8 +321,9 @@ void gui_event_loop() {
     }
 }
 
-void gui_main() {
+int main() {
     init_gui();
-    gui_event_loop();
+    event_loop();
     quit_gui();
+    return 0;
 }

@@ -1,4 +1,0 @@
-/home/zarolxyz/clion-2021.3.3/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/home/zarolxyz/clion-2021.3.3/bin/ninja/linux/ninja -G Ninja /home/zarolxyz/circuit
--- Configuring done
--- Generating done
--- Build files have been written to: /home/zarolxyz/circuit/cmake-build-debug

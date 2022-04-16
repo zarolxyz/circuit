@@ -18,16 +18,14 @@
 #define ELECTRIC_WIDTH (SIZE * 4 / 5)
 #define ELECTRIC_HEIGHT (SIZE * 2 / 5)
 #define ELECTRIC_WIRE_LENGTH ((SIZE - ELECTRIC_WIDTH) / 2)
-#define ELECTRIC_SOURCE_X 11
-#define ELECTRIC_SOURCE_Y 6
-#define ELECTRIC_RECTANGLE_X(x) (SIZE * (x) + (SIZE - ELECTRIC_WIDTH) / 2)
-#define ELECTRIC_RECTANGLE_Y(y) (SIZE / 2 + SIZE * (y) - ELECTRIC_HEIGHT / 2)
+#define ELECTRIC_SOURCE_X ((WIDTH + 1) / 2 - 1)
+#define ELECTRIC_SOURCE_Y (HEIGHT / 2)
 
 extern SDL_Window *window;
 extern SDL_Renderer *renderer;
 extern TTF_Font *font;
-extern electric_t *electric_map[WIDTH][HEIGHT - 1];
-extern electric_t **gui_electrics;
+extern electric_t *electric_map[WIDTH][HEIGHT + 1];
+extern electric_t **electrics;
 extern int selected_x;
 extern int selected_y;
 extern float electric_source_voltage;
@@ -42,8 +40,6 @@ void quit_gui();
 
 void draw_text(int x, int y, char *text);
 
-void draw_back();
-
 void draw_electric(int x, int y, char *string1, char *string2);
 
 void draw_node1_wire(int x1, int y1, int x2, int y2);
@@ -52,14 +48,12 @@ void draw_node2_wire(int x1, int y1, int x2, int y2);
 
 void draw_circuit();
 
-electric_t *gui_new_electric();
+electric_t *new_electric();
 
-void gui_delete_electric(electric_t *electric);
+void destroy_electric(electric_t *electric);
 
-void gui_draw();
+void event_loop();
 
-void gui_event_loop();
-
-void gui_main();
+int main();
 
 #endif //CIRCUIT_GUI_H
