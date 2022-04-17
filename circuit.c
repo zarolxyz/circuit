@@ -400,6 +400,17 @@ void set_circuit_voltage(electric_t **electrics) {
         electrics[i]->voltage = electrics[i]->resistance * electrics[i]->current;
 }
 
+void free_direction(direction_t *direction) {
+    direction_t **next_directions = direction->next;
+    free(direction);
+    if (next_directions == NULL)
+        return;
+    int count = count_directions(next_directions);
+    for (int i = 0; i < count; i++)
+        free(next_directions[i]);
+    free(next_directions);
+}
+
 float run_circuit(electric_t **electrics, float voltage) {
     clear_electrics_status(electrics);
     direction_t **directions = parse_circuit_directions(electrics);
@@ -407,13 +418,14 @@ float run_circuit(electric_t **electrics, float voltage) {
     direction->next = directions;
     int count = count_directions(directions);
     if (count == 0) {
-        free(directions);
+        free_direction(direction);
         return 0;
     }
     float resistance = get_direction_resistance(direction, NULL);
     float current;
     current = voltage / resistance;
     set_direction_current(direction, current);
+    free_direction(direction);
     set_circuit_voltage(electrics);
     return current;
 }

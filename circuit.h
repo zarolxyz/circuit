@@ -86,6 +86,8 @@ void set_direction_current(direction_t *direction, float current);
 
 void set_circuit_voltage(electric_t **electrics);
 
+void free_direction(direction_t *direction);
+
 float run_circuit(electric_t **electrics, float voltage);
 
 #endif //CIRCUIT_CIRCUIT_H

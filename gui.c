@@ -24,10 +24,8 @@ void init_gui() {
                               (HEIGHT + 1) * SIZE, SDL_WINDOW_SHOWN);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
     font = TTF_OpenFont(FONT_FILE, FONT_SIZE);
-    if (font == NULL)
-        quit_gui();
     for (int i = 0; i < WIDTH; i++) {
-        for (int j = 0; j < HEIGHT - 1; j++)
+        for (int j = 0; j < HEIGHT + 1; j++)
             electric_map[i][j] = NULL;
     }
     electrics = new_electrics();
@@ -46,9 +44,7 @@ void quit_gui() {
     free(electrics);
     SDL_DestroyWindow(window);
     SDL_DestroyRenderer(renderer);
-    if (font != NULL) {
-        TTF_CloseFont(font);
-    }
+    TTF_CloseFont(font);
     TTF_Quit();
     SDL_Quit();
 }
@@ -161,14 +157,18 @@ void destroy_electric(electric_t *electric) {
 }
 
 void event_loop() {
+    int is_circuit_update = 0;
     SDL_Event event;
     while (1) {
+        if (is_circuit_update) {
+            is_circuit_update = 0;
+            total_current = run_circuit(electrics, electric_source_voltage);
+        }
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         draw_circuit();
         SDL_RenderPresent(renderer);
-        total_current = run_circuit(electrics, electric_source_voltage);
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
                 case SDL_KEYUP:
@@ -190,6 +190,7 @@ void event_loop() {
                                 selected_x++;
                             break;
                         case SDLK_l:
+                            is_circuit_update = 1;
                             if (!(selected_x == ELECTRIC_SOURCE_X && selected_y == ELECTRIC_SOURCE_Y)) {
                                 if (electric_map[selected_x][selected_y] == NULL)
                                     electric_map[selected_x][selected_y] = new_electric();
@@ -200,6 +201,7 @@ void event_loop() {
                             }
                             break;
                         case SDLK_q:
+                            is_circuit_update = 1;
                             if ((selected_x == ELECTRIC_SOURCE_X && selected_y == ELECTRIC_SOURCE_Y) &&
                                 electric_source_voltage - 0.1 > 0)
                                 electric_source_voltage -= 0.1;
@@ -210,6 +212,7 @@ void event_loop() {
                             }
                             break;
                         case SDLK_e:
+                            is_circuit_update = 1;
                             if ((selected_x == ELECTRIC_SOURCE_X && selected_y == ELECTRIC_SOURCE_Y))
                                 electric_source_voltage += 0.1;
                             else {
@@ -218,6 +221,7 @@ void event_loop() {
                             }
                             break;
                         case SDLK_j:
+                            is_circuit_update = 1;
                             if (electric_map[selected_x][selected_y] != NULL) {
                                 if (!is_connecting_wire) {
                                     is_connecting_wire = 1;
@@ -235,6 +239,7 @@ void event_loop() {
                                             else
                                                 node_electrics[i]->node2 = electric_map[selected_x][selected_y]->node1;
                                         }
+                                        free(node_electrics);
                                     } else {
                                         int node = electric_map[selected_x][selected_y]->node1;
                                         node_electrics = find_node_electrics(electrics, node);
@@ -245,6 +250,7 @@ void event_loop() {
                                             else
                                                 node_electrics[i]->node2 = connecting_node;
                                         }
+                                        free(node_electrics);
                                     }
                                 }
                             } else if (selected_x == ELECTRIC_SOURCE_X && selected_y == ELECTRIC_SOURCE_Y) {
@@ -261,10 +267,12 @@ void event_loop() {
                                         else
                                             node_electrics[i]->node2 = ANODE;
                                     }
+                                    free(node_electrics);
                                 }
                             }
                             break;
                         case SDLK_k:
+                            is_circuit_update = 1;
                             if (electric_map[selected_x][selected_y] != NULL) {
                                 if (!is_connecting_wire) {
                                     is_connecting_wire = 1;
@@ -282,6 +290,7 @@ void event_loop() {
                                             else
                                                 node_electrics[i]->node2 = electric_map[selected_x][selected_y]->node2;
                                         }
+                                        free(node_electrics);
                                     } else {
                                         int node = electric_map[selected_x][selected_y]->node2;
                                         node_electrics = find_node_electrics(electrics, node);
@@ -292,6 +301,7 @@ void event_loop() {
                                             else
                                                 node_electrics[i]->node2 = connecting_node;
                                         }
+                                        free(node_electrics);
                                     }
                                 }
                             } else if (selected_x == ELECTRIC_SOURCE_X && selected_y == ELECTRIC_SOURCE_Y) {
@@ -308,6 +318,7 @@ void event_loop() {
                                         else
                                             node_electrics[i]->node2 = CATHODE;
                                     }
+                                    free(node_electrics);
                                 }
                             }
                             break;
